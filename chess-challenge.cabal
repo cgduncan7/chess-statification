@@ -1,0 +1,24 @@
+name:                chess-challenge
+version:             0.1.0.0
+-- synopsis:
+-- description:
+homepage:            https://github.com/cgduncan7/chess-challenge#readme
+license:             BSD3
+license-file:        LICENSE
+author:              Collin Duncan
+maintainer:          cgduncan7@gmail.com
+copyright:           N/A
+category:            Web
+build-type:          Simple
+cabal-version:       >= 2.0
+extra-source-files:  README.md
+
+executable chess-challenge
+  hs-source-dirs:     src
+  main-is:            Main.hs
+  default-language:   Haskell2010
+  build-depends:      base >= 4.7 && < 5,
+                      directory,
+                      regex-tdfa,
+                      text,
+                      containers
