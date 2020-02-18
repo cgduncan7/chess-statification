@@ -1,5 +1,7 @@
 module PGN (
+  MetaData,
   GameData(GameData),
+  GameData',
   getMetadata,
   getMetadataValue,
   getMovedata,
@@ -13,24 +15,30 @@ import qualified Data.Text as T
 import qualified Data.Map as M
 import Text.Regex.TDFA
 
-data GameData = GameData { metadata :: M.Map String String
+type MetaData = M.Map String String
+
+data GameData = GameData { metadata :: MetaData
                          , movedata :: [String]
                          } deriving (Show, Eq)
 
-getMetadata :: Either GameData String -> M.Map String String
-getMetadata x = case x of Right s                    -> error s
-                          Left (GameData metadata _) -> metadata
+type GameData' = Either GameData String
 
-getMetadataValue :: (Either GameData String) -> String -> Maybe String
+getMetadata :: GameData' -> MetaData
+getMetadata x = case x of
+  Right s                    -> error s
+  Left (GameData metadata _) -> metadata
+
+getMetadataValue :: (GameData') -> String -> Maybe String
 getMetadataValue l s = M.lookup s (getMetadata l)
 
-getMovedata :: Either GameData String -> [String]
-getMovedata x = case x of Right s                    -> error s
-                          Left (GameData _ movedata) -> movedata
+getMovedata :: GameData' -> [String]
+getMovedata x = case x of
+  Right s                    -> error s
+  Left (GameData _ movedata) -> movedata
 
-extractGamedata :: String -> Either GameData String
+extractGamedata :: String -> GameData'
 extractGamedata "" = Right "Empty string provided"
-extractGamedata x = Left ((GameData (extractMetadata lines)) (extractMovedata lines))
+extractGamedata x = Left (GameData (extractMetadata lines) (extractMovedata lines))
   where lines = map T.unpack (T.lines (T.pack x))
 
 extractMetadataKeyValue :: String -> (String, String)
@@ -40,7 +48,7 @@ extractMetadataKeyValue x =
       getGroups (_, _, _, [a, b]) = (a, b)
   in getGroups matches
 
-extractMetadata :: [String] -> M.Map String String
+extractMetadata :: [String] -> MetaData
 extractMetadata [] = M.empty
 extractMetadata x =
   let prefix = T.pack "["
