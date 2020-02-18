@@ -25,18 +25,15 @@ state: {
 game: {
   id: Number,
   gameStates: gameState[],
-  totalGameStates: Number
-  black: String,
-  white: String,
+  players: playerInfo
   result: < "1-0" | "0-1" | "1/2-1/2" | null >
 }
 
 gameState: {
   id: Number,
   pieces: piece[],
-  check: Boolean,
-  checkmate: Boolean,
-  stalemate: Boolean,
+  status: < check | checkmate | stalemate | normal >,
+  turn: < white | black >
 }
 
 piece: {
