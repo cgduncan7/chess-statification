@@ -1,13 +1,11 @@
 module ChessState (
   Row(..),
   Column(..),
-  Captured,
-  Location,
   Color(..),
-  PieceRank(..),
-  pieceRankToPGN,
-  pgnToPieceRank,
-  Piece(Piece),
+  -- PieceRank(..),
+  -- pieceRankToPGN,
+  -- pgnToPieceRank,
+  -- Piece(Piece),
   GameStatus(..),
   GameState(GameState),
   Player(Player),
@@ -18,52 +16,14 @@ module ChessState (
 ) where
 
 import Data.Maybe (fromJust)
-import PGN (GameData, GameData', getMetadataValue)
 
-data Row = One | Two | Three | Four | Five | Six | Seven | Eight
-  deriving (Read, Show, Enum, Eq, Ord)
-
-data Column = A | B | C | D | E | F | G | H
-  deriving (Read, Show, Enum, Eq, Ord)
-
-type Captured = Bool
-
-type Location = (Column, Row, Captured)
-
-data Color = White | Black
-  deriving (Read, Show, Enum, Eq, Ord)
-
-data PieceRank = Pawn | Knight | Bishop | Rook | Queen | King
-  deriving (Read, Show, Enum, Eq, Ord)
-
-pieceRankToPGN :: PieceRank -> Maybe Char
-pieceRankToPGN p = case p of
-  Pawn -> Nothing
-  Knight -> Just 'N'
-  Bishop -> Just 'B'
-  Rook -> Just 'R'
-  Queen -> Just 'Q'
-  King -> Just 'K'
-
-pgnToPieceRank :: Maybe Char -> PieceRank
-pgnToPieceRank p = case p of
-  Nothing -> Pawn
-  Just 'N' -> Knight
-  Just 'B' -> Bishop
-  Just 'R' -> Rook
-  Just 'Q' -> Queen
-  Just 'K' -> King
-
-data Piece = Piece { pieceId :: String
-                   , pieceRank :: PieceRank
-                   , pieceColor :: Color
-                   , pieceLocation :: Location
-                   } deriving (Show, Read, Eq)
+import PGN (MoveData, GameData, GameData', getMetadataValue, getMovedata)
+import ChessTypes
+import ChessPieces.Piece
 
 data GameStatus = Check | Checkmate | Stalemate | Normal deriving (Show, Read, Eq)
 
-data GameState = GameState { gsid :: String
-                           , gsPieces :: [Piece]
+data GameState = GameState { gsPieces :: [Piece]
                            , gsStatus :: GameStatus
                            , gsTurn :: Color
                            } deriving (Show, Read, Eq)
@@ -72,6 +32,12 @@ data Player = Player { playerName :: String
                      , playerELO :: String
                      , playerColor :: Color
                      } deriving (Show, Read, Eq)
+
+instance Ord Player where
+  (Player x a _) `compare` (Player y b _) =
+    let ab = a `compare` b
+        xy = x `compare` y
+    in if ab == EQ then xy else ab
 
 data Result = WhiteWins | BlackWins | Draw deriving (Show, Read, Eq)
 
@@ -95,7 +61,7 @@ gamedataToGame x = case x of
   Right s -> error s
   Left _  ->
     let id = "1"
-        states = []
+        states = movedataToStates $ getMovedata x
         wn = fromJust $ getMetadataValue x "White"
         we = fromJust $ getMetadataValue x "WhiteElo"
         bn = fromJust $ getMetadataValue x "Black"
@@ -105,3 +71,40 @@ gamedataToGame x = case x of
         players = (w, b)
         result = pgnToResult $ fromJust $ getMetadataValue x "Result"
     in Game id states players result
+
+-- defaultPieces = [ Piece Pawn White (A, Two, False)
+--                 , Piece Pawn White (B, Two, False)
+--                 , Piece Pawn White (C, Two, False)
+--                 , Piece Pawn White (D, Two, False)
+--                 , Piece Pawn White (E, Two, False)
+--                 , Piece Pawn White (F, Two, False)
+--                 , Piece Pawn White (G, Two, False)
+--                 , Piece Pawn White (H, Two, False)
+--                 , Piece Rook White (A, One, False)
+--                 , Piece Knight White (B, One, False)
+--                 , Piece Bishop White (C, One, False)
+--                 , Piece Queen White (D, One, False)
+--                 , Piece King White (E, One, False)
+--                 , Piece Bishop White (F, One, False)
+--                 , Piece Knight White (G, One, False)
+--                 , Piece Rook White (H, One, False)
+--                 , Piece Pawn Black (A, Seven, False)
+--                 , Piece Pawn Black (B, Seven, False)
+--                 , Piece Pawn Black (C, Seven, False)
+--                 , Piece Pawn Black (D, Seven, False)
+--                 , Piece Pawn Black (E, Seven, False)
+--                 , Piece Pawn Black (F, Seven, False)
+--                 , Piece Pawn Black (G, Seven, False)
+--                 , Piece Pawn Black (H, Seven, False)
+--                 , Piece Rook Black (A, Eight, False)
+--                 , Piece Knight Black (B, Eight, False)
+--                 , Piece Bishop Black (C, Eight, False)
+--                 , Piece Queen Black (D, Eight, False)
+--                 , Piece King Black (E, Eight, False)
+--                 , Piece Bishop Black (F, Eight, False)
+--                 , Piece Knight Black (G, Eight, False)
+--                 , Piece Rook Black (H, Eight, False)
+--                 ]
+
+movedataToStates :: [MoveData] -> [GameState]
+movedataToStates xs = [GameState [] Normal White]
