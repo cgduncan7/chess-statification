@@ -26,10 +26,6 @@ import ChessTypes
 
 type MetaData = M.Map String String
 
-data Move = MoveLocation Location | KCastle | QCastle deriving (Show, Read, Eq)
-
-type MoveData = ([PieceRank],  Maybe (Either Column Row), Move)
-
 data GameData = GameData { metadata :: MetaData
                          , movedata :: [MoveData]
                          } deriving (Show, Read, Eq)
