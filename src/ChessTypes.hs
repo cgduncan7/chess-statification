@@ -4,7 +4,10 @@ module ChessTypes (
   Column(..),
   pgnColToColumn,
   Location,
-  Color(..)
+  Color(..),
+  PieceRank(..),
+  Move(..),
+  MoveData(..)
 )
 where
 
@@ -40,3 +43,9 @@ data Color = White | Black
   deriving (Read, Show, Enum, Eq, Ord)
 
 type Location = (Column, Row)
+
+data PieceRank = Pawn | Knight | Bishop | Rook | Queen | King deriving (Show, Read, Eq)
+
+data Move = MoveLocation Location | KCastle | QCastle deriving (Show, Read, Eq)
+
+type MoveData = ([PieceRank],  Maybe (Either Column Row), Move)
