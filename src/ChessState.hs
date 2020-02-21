@@ -1,16 +1,13 @@
 module ChessState (
-  Row(..),
-  Column(..),
-  Color(..),
-  -- PieceRank(..),
-  -- pieceRankToPGN,
-  -- pgnToPieceRank,
-  -- Piece(Piece),
   GameStatus(..),
   GameState(GameState),
+  getGSPieces,
+  getGSStatus,
+  getGSTurn,
   Player(Player),
   Result(..),
   Game(Game),
+  getGameStates,
   Game',
   gamedataToGame
 ) where
@@ -27,6 +24,15 @@ data GameState = GameState { gsPieces :: [Piece]
                            , gsStatus :: GameStatus
                            , gsTurn :: Color
                            } deriving (Show, Read, Eq)
+
+getGSPieces :: GameState -> [Piece]
+getGSPieces (GameState pieces _ _) = pieces
+
+getGSStatus :: GameState -> GameStatus
+getGSStatus (GameState _ status _) = status
+
+getGSTurn :: GameState -> Color
+getGSTurn (GameState _ _ turn) = turn
 
 data Player = Player { playerName :: String
                      , playerELO :: String
@@ -54,6 +60,9 @@ data Game = Game { gid :: String
                  , gResult :: Maybe Result
                  } deriving (Show, Read, Eq)
 
+getGameStates :: Game -> [GameState]
+getGameStates (Game _ s _ _) = s
+
 type Game' = Maybe Game
 
 gamedataToGame :: GameData' -> Game
@@ -61,7 +70,7 @@ gamedataToGame x = case x of
   Right s -> error s
   Left _  ->
     let id = "1"
-        states = movedataToStates $ getMovedata x
+        states = movedataToGameStates $ getMovedata x
         wn = fromJust $ getMetadataValue x "White"
         we = fromJust $ getMetadataValue x "WhiteElo"
         bn = fromJust $ getMetadataValue x "Black"
@@ -72,39 +81,48 @@ gamedataToGame x = case x of
         result = pgnToResult $ fromJust $ getMetadataValue x "Result"
     in Game id states players result
 
--- defaultPieces = [ Piece Pawn White (A, Two, False)
---                 , Piece Pawn White (B, Two, False)
---                 , Piece Pawn White (C, Two, False)
---                 , Piece Pawn White (D, Two, False)
---                 , Piece Pawn White (E, Two, False)
---                 , Piece Pawn White (F, Two, False)
---                 , Piece Pawn White (G, Two, False)
---                 , Piece Pawn White (H, Two, False)
---                 , Piece Rook White (A, One, False)
---                 , Piece Knight White (B, One, False)
---                 , Piece Bishop White (C, One, False)
---                 , Piece Queen White (D, One, False)
---                 , Piece King White (E, One, False)
---                 , Piece Bishop White (F, One, False)
---                 , Piece Knight White (G, One, False)
---                 , Piece Rook White (H, One, False)
---                 , Piece Pawn Black (A, Seven, False)
---                 , Piece Pawn Black (B, Seven, False)
---                 , Piece Pawn Black (C, Seven, False)
---                 , Piece Pawn Black (D, Seven, False)
---                 , Piece Pawn Black (E, Seven, False)
---                 , Piece Pawn Black (F, Seven, False)
---                 , Piece Pawn Black (G, Seven, False)
---                 , Piece Pawn Black (H, Seven, False)
---                 , Piece Rook Black (A, Eight, False)
---                 , Piece Knight Black (B, Eight, False)
---                 , Piece Bishop Black (C, Eight, False)
---                 , Piece Queen Black (D, Eight, False)
---                 , Piece King Black (E, Eight, False)
---                 , Piece Bishop Black (F, Eight, False)
---                 , Piece Knight Black (G, Eight, False)
---                 , Piece Rook Black (H, Eight, False)
---                 ]
+defaultPieces = [ Piece Pawn (A, Two) White
+                , Piece Pawn (B, Two) White
+                , Piece Pawn (C, Two) White
+                , Piece Pawn (D, Two) White
+                , Piece Pawn (E, Two) White
+                , Piece Pawn (F, Two) White
+                , Piece Pawn (G, Two) White
+                , Piece Pawn (H, Two) White
+                , Piece Rook (A, One) White
+                , Piece Knight (B, One) White
+                , Piece Bishop (C, One) White
+                , Piece Queen (D, One) White
+                , Piece King (E, One) White
+                , Piece Bishop (F, One) White
+                , Piece Knight (G, One) White
+                , Piece Rook (H, One) White
+                , Piece Pawn (A, Seven) Black
+                , Piece Pawn (B, Seven) Black
+                , Piece Pawn (C, Seven) Black
+                , Piece Pawn (D, Seven) Black
+                , Piece Pawn (E, Seven) Black
+                , Piece Pawn (F, Seven) Black
+                , Piece Pawn (G, Seven) Black
+                , Piece Pawn (H, Seven) Black
+                , Piece Rook (A, Eight) Black
+                , Piece Knight (B, Eight) Black
+                , Piece Bishop (C, Eight) Black
+                , Piece Queen (D, Eight) Black
+                , Piece King (E, Eight) Black
+                , Piece Bishop (F, Eight) Black
+                , Piece Knight (G, Eight) Black
+                , Piece Rook (H, Eight) Black
+                ]
 
-movedataToStates :: [MoveData] -> [GameState]
-movedataToStates xs = [GameState [] Normal White]
+defaultState = GameState defaultPieces Normal White
+
+movedataToGameStates :: [MoveData] -> [GameState]
+movedataToGameStates xs = foldl (\acc x -> acc ++ [movedataToGameState (last acc) x]) [defaultState] xs
+
+movedataToGameState :: GameState -> MoveData -> GameState
+movedataToGameState s m =
+  let turn = getGSTurn s
+      pieces = getGSPieces s
+      nextTurn = toEnum $ (fromEnum turn + 1) `mod` 2 :: Color
+  in (GameState defaultPieces Normal nextTurn)
