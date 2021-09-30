@@ -1,21 +1,25 @@
 module ChessTypes (
-  Row(..),
-  pgnRowToRow,
-  Column(..),
-  pgnColToColumn,
+  Rank(..),
+  pgnRankToRank,
+  File(..),
+  pgnFileToFile,
   Location,
   Color(..),
-  PieceRank(..),
+  PieceName(..),
   Move(..),
-  MoveData(..)
+  MoveStartingLocation,
+  MoveData(..),
 )
 where
 
-data Row = One | Two | Three | Four | Five | Six | Seven | Eight
+import Debug.Trace (trace)
+
+-- Rows of the board
+data Rank = One | Two | Three | Four | Five | Six | Seven | Eight
   deriving (Read, Show, Enum, Eq, Ord)
 
-pgnRowToRow :: Char -> Row
-pgnRowToRow r = case r of
+pgnRankToRank :: Char -> Rank
+pgnRankToRank r = case r of
   '1' -> One
   '2' -> Two
   '3' -> Three
@@ -25,11 +29,12 @@ pgnRowToRow r = case r of
   '7' -> Seven
   '8' -> Eight
 
-data Column = A | B | C | D | E | F | G | H 
+-- Columns of the board
+data File = A | B | C | D | E | F | G | H 
   deriving (Read, Show, Enum, Eq, Ord)
 
-pgnColToColumn :: Char -> Column
-pgnColToColumn c = case c of
+pgnFileToFile :: Char -> File
+pgnFileToFile c = case c of
   'a' -> A
   'b' -> B
   'c' -> C
@@ -42,10 +47,12 @@ pgnColToColumn c = case c of
 data Color = White | Black
   deriving (Read, Show, Enum, Eq, Ord)
 
-type Location = (Column, Row)
+type Location = (File, Rank)
 
-data PieceRank = Pawn | Knight | Bishop | Rook | Queen | King deriving (Show, Read, Eq)
+data PieceName = Pawn | Knight | Bishop | Rook | Queen | King deriving (Show, Read, Eq)
 
 data Move = MoveLocation Location | KCastle | QCastle deriving (Show, Read, Eq)
 
-type MoveData = ([PieceRank],  Maybe (Either Column Row), Move)
+type MoveStartingLocation = Maybe (Either (Either File Rank) Location)
+
+type MoveData = ([PieceName],  MoveStartingLocation, Move)

@@ -1,5 +1,5 @@
 module ChessPieces.Piece (
-  PieceRank(..),
+  PieceName(..),
   Piece(..),
   getPieceRank,
   getPieceLocation,
@@ -7,17 +7,21 @@ module ChessPieces.Piece (
   getPiecesByColor,
   getPiecesByRank,
   getPiecesByColorAndRank,
-  getValidPieceForMove,
-  isValidMove
+  getValidPiecesForMove,
+  isValidMove,
+  movePieces,
+  movePiece
 ) where
+
+import Debug.Trace (trace)
 
 import ChessTypes
 import qualified ChessPieces.Pawn as Pawn
 import qualified ChessPieces.Knight as Knight
 
-data Piece = Piece PieceRank Location Color deriving (Show, Read, Eq)
+data Piece = Piece PieceName Location Color deriving (Show, Read, Eq)
 
-getPieceRank :: Piece -> PieceRank
+getPieceRank :: Piece -> PieceName
 getPieceRank (Piece r _ _) = r
 
 getPieceLocation :: Piece -> Location
@@ -31,22 +35,39 @@ getPiecesByColor c p =
   let match x = (getPieceColor x) == c
   in filter match p
 
-getPiecesByRank :: [PieceRank] -> [Piece] -> [Piece]
+getPiecesByRank :: [PieceName] -> [Piece] -> [Piece]
 getPiecesByRank r p =
   let match x = (getPieceRank x) `elem` r
   in filter match p
 
-getPiecesByColorAndRank :: [Piece] -> Color -> [PieceRank] -> [Piece]
+getPiecesByColorAndRank :: [Piece] -> Color -> [PieceName] -> [Piece]
 getPiecesByColorAndRank p c r = getPiecesByColor c (getPiecesByRank r p)
 
-getValidPieceForMove :: MoveData -> Color -> [Piece] -> Piece
-getValidPieceForMove (rs, s, m) c p =
+getValidPiecesForMove :: MoveData -> Color -> [Piece] -> [Piece]
+getValidPiecesForMove (rs, s, m) c p =
   let avail = getPiecesByColorAndRank p c rs
       isValid x = isValidMove (rs, s, m) x
-  in filter isValid avail !! 0
+  in filter isValid avail
+
+getInvalidPiecesForMove :: MoveData -> Color -> [Piece] -> [Piece]
+getInvalidPiecesForMove (rs, s, m) c p =
+  let isValid x = not $ isValidMove (rs, s, m) x
+  in filter isValid p
 
 isValidMove :: MoveData -> Piece -> Bool
 isValidMove m (Piece p l _) = 
   case p of
-    Pawn   -> Pawn.isValidMove m l
-    Knight -> Knight.isValidMove m l
+    Pawn      -> Pawn.isValidMove m l
+    Knight    -> Knight.isValidMove m l
+    otherwise -> False
+  
+movePieces :: MoveData -> Color -> [Piece] -> [Piece]
+movePieces md c pieces =
+  let movingPieces = getValidPiecesForMove md c pieces
+      stationaryPieces = getInvalidPiecesForMove md c pieces
+      mapMove pieces = map (movePiece md) pieces
+  in concat [mapMove movingPieces, stationaryPieces]
+
+movePiece :: MoveData -> Piece -> Piece
+movePiece (_,  _, (MoveLocation (f, r))) (Piece p _ c) =
+  (Piece p (f, r) c)

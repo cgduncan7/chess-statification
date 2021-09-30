@@ -5,4 +5,4 @@ module ChessPieces.Pawn (
 import ChessTypes
 
 isValidMove :: MoveData -> Location -> Bool
-isValidMove m l = True
+isValidMove m l = False

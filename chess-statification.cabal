@@ -1,8 +1,8 @@
-name:                chess-challenge
+name:                chess-statification
 version:             0.1.0.0
 -- synopsis:
 -- description:
-homepage:            https://github.com/cgduncan7/chess-challenge#readme
+homepage:            https://github.com/cgduncan7/chess-statification#readme
 license:             BSD3
 license-file:        LICENSE
 author:              Collin Duncan
@@ -10,10 +10,10 @@ maintainer:          cgduncan7@gmail.com
 copyright:           N/A
 category:            Web
 build-type:          Simple
-cabal-version:       >= 2.0
+cabal-version:       2.0
 extra-source-files:  README.md
 
-executable chess-challenge
+executable chess-statification
   hs-source-dirs:     src
   main-is:            Main.hs
   default-language:   Haskell2010
@@ -22,3 +22,9 @@ executable chess-challenge
                       regex-tdfa,
                       text,
                       containers
+  other-modules:      ChessPieces.Piece,
+                      ChessPieces.Pawn,
+                      ChessPieces.Knight,
+                      ChessState,
+                      ChessTypes,
+                      PGN

@@ -12,6 +12,8 @@ module ChessState (
   gamedataToGame
 ) where
 
+import Debug.Trace (trace)
+
 import Data.Maybe (fromJust)
 
 import PGN (MoveData, GameData, GameData', getMetadataValue, getMovedata)
@@ -124,5 +126,7 @@ movedataToGameState :: GameState -> MoveData -> GameState
 movedataToGameState s m =
   let turn = getGSTurn s
       pieces = getGSPieces s
+      movedPieces = movePieces m turn pieces
       nextTurn = toEnum $ (fromEnum turn + 1) `mod` 2 :: Color
-  in (GameState defaultPieces Normal nextTurn)
+  in trace ("movedataToGameState" ++ " -- " ++ show m ++ "\n" ++ show movedPieces) $ (GameState movedPieces Normal nextTurn)
+  --in (GameState movedPieces Normal nextTurn)
