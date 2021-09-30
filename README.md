@@ -13,6 +13,21 @@ All games must be stored in `./data/` folder and be in PGN format. Sometimes PGN
 
 Each game will be comprised of and only these two sections. Any whitespace between games is not needed but helpful for humans.
 
+## running
+Requirements:
+- GHC
+- stack
+
+Commands to get started
+
+```sh
+stack setup # will install appropriate GHC
+```
+
+```sh
+stack run chess-statification # Will build and run app
+```
+
 ## data model
 The state of the chess-challenge program will be (loosely) defined as this:
 ```
